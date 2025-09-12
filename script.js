@@ -8,6 +8,11 @@ function getCurrentMonth(){
 function getCurrentYear(){
     console.log(moment().format('YYYY'))
 }
+function getDate(){
+    console.log(moment().format("YYYY/MM/DD HH:mm:ss"))
+}
 getCurrentDay()
 getCurrentMonth()
 getCurrentYear()
+
+getDate()
