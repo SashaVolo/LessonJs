@@ -11,8 +11,14 @@ function getCurrentYear(){
 function getDate(){
     console.log(moment().format("YYYY/MM/DD HH:mm:ss"))
 }
+function getWeekDay(){
+    return moment().format('dddd')
+}
+
 getCurrentDay()
 getCurrentMonth()
 getCurrentYear()
 
 getDate()
+
+console.log(getWeekDay() + " з нової вітки")
