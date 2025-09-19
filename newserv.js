@@ -1,45 +1,38 @@
-const moment = require("moment")
-
-function getCurrentDay(){
-    console.log(moment().format('dddd'))
-}
-function getCurrentMonth(){
-    console.log(moment().format('MMMM'))
-}
-function getCurrentYear(){
-    console.log(moment().format('YYYY'))
-}
-function getDate(){
-    console.log(moment().format("YYYY/MM/DD HH:mm:ss"))
-}
-function getWeekDay(){
-    return moment().format('dddd')
-}
-
-function getTime(){
-
-    return moment().format("HH:mm:ss")
-    
-}
-
-getCurrentDay()
-getCurrentMonth()
-getCurrentYear()
-
-
-console.log(getWeekDay())
-
 const express = require("express")
 
 const HOST = "127.0.0.1"
 const PORT = 8000
 const app = express()
 
-let date = getDate()
+const users = [
+    {
+        id: "001",
+        name: "Mykola",
+        age: 27
+    },
+    {
+        id: "002",
+        name: "Bohdan",
+        age: 19
+    },
+    {
+        id: "003",
+        name: "Felix",
+        age: 14
+    },
+    {
+        id: "004",
+        name: "Swagй",
+        age: 67
+    }
+]
 
+app.get("/", (req,res) =>{
+    res.json(users)
+})
+app.get("/user", (req,res) =>{
 
-app.get("/timestamp", (req,res) =>{
-    res.json({timestamp: getTime()})
+    res.json(users[Math.floor(Math.random() * users.length)])
 })
 
 app.listen(PORT, HOST, () => {
