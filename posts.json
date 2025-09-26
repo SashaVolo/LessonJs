@@ -1,5 +1,4 @@
-{
-  "posts": [
+[
     {
         "id": 1,
         "name": "AnimalPhoto",
@@ -28,5 +27,4 @@
         "pic": "https://media.istockphoto.com/id/1201041782/ru/%D1%84%D0%BE%D1%82%D0%BE/%D0%B0%D0%BB%D1%8C%D0%BF%D0%B0%D0%BA%D0%B0.jpg?s=612x612&w=0&k=20&c=lGV8-EZe3bkpnmtBBnOvnSR7XaWVTPrWOmu1o_Wnyqs=",
         "likecount": 500
     }
-  ]
-}
+]
