@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "name": "Sasha",
+        "email": "qwe@gmail.com",
+        "password":"12345678"
+    },
+    {
+        "id": 2,
+        "name": "LilChill",
+        "email": "lil@gmail.com",
+        "password":"12345678"
+    },
+    {
+        "id": 3,
+        "name": "Maxim",
+        "email": "qwe@gmail.com",
+        "password":"mamasawa"
+    },
+    {
+        "id": 4,
+        "name": "Napun",
+        "email": "mmmm@gmail.com",
+        "password":"tyrjjhtjdth"
+    }
+    
+]
