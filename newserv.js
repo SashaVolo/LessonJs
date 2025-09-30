@@ -126,7 +126,11 @@ app.get("/users/id/:id",(req,res)=>{   //вивід користувача по 
             if(findId[element] !==undefined){   // якщо такий ключ є у користувача
                 findIdFields[element] = findId[element]   // то записуємо у інший об'єкт цей ключ
             }
+            else{
+                res.status(404).json("not found keys")
+            }
         })
+        
         res.status(200).json(findIdFields)  //виводимо об'єкт
         return
     }
