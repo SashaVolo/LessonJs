@@ -108,7 +108,7 @@ app.get("/users",(req,res)=>{
     res.status(200).json(users)     //вивід усіх користувачів
 })
 
-app.get("/users/:id",(req,res)=>{   //вивід користувача по id
+app.get("/users/id/:id",(req,res)=>{   //вивід користувача по id
     const fields = req.query.fields
     const id = Number(req.params.id)
     if(isNaN(id)){
@@ -133,6 +133,20 @@ app.get("/users/:id",(req,res)=>{   //вивід користувача по id
     res.status(200).json(findId)    //якщо параметром не скористувались виводимо усі дані користувача
 })
 
+app.get("/users/name/:name",(req,res)=>{ //вивід користувача за ім'ям 
+    const name = req.params.name
+    const filterName = users.filter(user => user.name ===name)
+    if(filterName.length === 0){ //якщо масив пустий
+        res.status(404).json("not found users with that name") //вивести що користувачів не знайдено 
+        return
+    }
+    res.status(200).json(filterName)
+})
+
 app.listen(PORT, HOST, () => { //слухач
     console.log(`http://${HOST}:${PORT}`)
 })
+
+"http://127.0.0.1:8000/users"
+"http://127.0.0.1:8000/users/id/"
+"http://127.0.0.1:8000/users/name/"
