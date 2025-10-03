@@ -147,9 +147,49 @@ app.get("/users/name/:name",(req,res)=>{ //вивід користувача з�
     res.status(200).json(filterName)
 })
 
+const fsPromises = require("fs/promises")   //для асинх запису поста
+app.use(express.json()); // для читання json
+app.post("/posts", async (req,res)=>{ //обробник post запиту
+    try{
+        let arrPosts=[]
+        try{ //первірка що користувач увів все в масив, а не просто об'єктами
+        arrPosts = [...req.body]  //копіюємо масив постів
+        }catch{
+            res.status(400).json("json is array, not object")
+        }
+        arrPosts.forEach((p)=>{  //йдемо по кожному
+            let{name,description,pic,likecount} = p
+            if(!name || !description || !pic){  //валідація за ім'ям, описом, зображенням
+                res.status(422).json("422 - server didn`t can to work with this data")
+                return
+            }
+            if(!likecount){ //первірка наявності likecount
+                likecount=0
+            }
+            const id = posts.length+1 //створення id для поста
+            const post = { // створення поста
+                id,
+                name,
+                description,
+                pic,
+                likecount
+            }
+            posts.push(post) // додавання до масиву поста
+            
+        })
+        await fsPromises.writeFile("posts.json",JSON.stringify(posts, null, 2)) //перезапис нового масиву
+        res.status(200).json(posts) 
+    }
+    catch(err){
+        res.status(500).json("server error 500 "+ err)
+    }
+})
+
 app.listen(PORT, HOST, () => { //слухач
     console.log(`http://${HOST}:${PORT}`)
 })
+
+
 
 "http://127.0.0.1:8000/users"
 "http://127.0.0.1:8000/users/id/"
