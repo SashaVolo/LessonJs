@@ -88,18 +88,10 @@ export const postService = {
         }
     },
 
-    CreatePost: async (body: any) => {
+    CreatePost: async (body:Post[]) => {
         try {
             let arrPosts = []
-            try { //перевірка що користувач увів все в масив, а не просто об'єктами
-                arrPosts = [...body]  //копіюємо масив постів
-            } catch {
-                return {
-                    status: "error",
-                    message: `json is array, not object`,
-                    code: 400
-                }
-            }
+            arrPosts = [...body]
             for (const p of arrPosts) {
                 let { name, description, pic, likecount } = p
                 if (!name || !description || !pic) {
