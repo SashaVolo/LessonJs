@@ -23,4 +23,8 @@ postRouter.get("/posts/:id", postController.getPostsById);
 // Створити новий пост
 postRouter.post("/posts", postController.createPost);
 
+
+//Обновити пост за id
+postRouter.patch("/posts/:id",postController.updatePost);
+
 export {postRouter}

@@ -1,6 +1,7 @@
-// const postService=require("./post.service")
 import { postService } from "./post.service"
-import type { Request,Response } from "express"
+import type { Request,Response } from "express" //імпорт 
+//в контролері в мене немає визовів типів, які я створював, тому не імпортую
+
 export const postController = {
     getAllPosts: (req: Request,res:Response)=>{
         const filter = req.query.filter as string | undefined;
@@ -27,11 +28,20 @@ export const postController = {
         res.status(200).json(resp.data)
     },
     createPost: async (req: Request,res:Response)=>{
-        const resp = await postService.CreatePost(req.body)
+        const resp= await postService.CreatePost(req.body)
         if(resp.status =="error"){
             res.status(Number(resp.code)).json(resp.message)
             return
         }
         res.status(200).json(resp.data)
+    },
+    updatePost: async (req: Request,res:Response)=>{
+        const id = Number(req.params.id)
+        const resp= await postService.UpdatePost(id, req.body);
+        if(resp.status =="error"){
+            res.status(Number(resp.code)).json(resp.message)
+            return
+        }
+        res.status(200).json(resp.data)    
     }
 }
