@@ -1,14 +1,14 @@
 import fs from "fs";
 import path from "path";
 import fsPromises from "fs/promises";
-import type { Post, CreatePostData, UpdatePostData, ServiceResponse } from "./post.types"
+import type { Post, CreatePostData, UpdatePostData, ServiceResponse, IServiceContract } from "./post.types"
 
 
 const pat = path.join(__dirname, "../../posts.json");
 const posts: Post[] = JSON.parse(fs.readFileSync(pat, "utf8"));
 let postsCopyAfterFilter: Post[] = [...posts];
 
-export const postService = {
+export const postService:IServiceContract = {
     getAllPosts: (filter?: string, skip?: string, take?: string): ServiceResponse => {
         if (filter) {
             let boolFilter: boolean;

@@ -15,7 +15,7 @@
   },
   {
     "id": 3,
-    "name": "blackTiger",
+    "name": "AnimalPhototufui",
     "description": "hungry animal",
     "pic": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhlF4YXI3oCjwP2JFBryZw-wHy7ah58Mx6E5_ZVZoPclPkWwNmwrxe6au1cRhkdzXrJdo&usqp=CAU",
     "likecount": 300
@@ -54,5 +54,12 @@
     "description": "Описание нового поста",
     "pic": "https://picsum.photos/200",
     "likecount": 0
+  },
+  {
+    "id": 9,
+    "name": "AnimalPhoto",
+    "description": "beautiful animal",
+    "pic": "ноасрп",
+    "likecount": 100
   }
 ]
