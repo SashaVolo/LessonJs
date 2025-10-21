@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import fsPromises from "fs/promises";
-import type { Post, CreatePostData, UpdatePostData, ServiceResponse, IServiceContract } from "./post.types"
+import type { Post, CreatePostData, ServiceResponse, IServiceContract } from "./post.types"
 
 
 const pat = path.join(__dirname, "../../posts.json");
@@ -9,7 +9,7 @@ const posts: Post[] = JSON.parse(fs.readFileSync(pat, "utf8"));
 let postsCopyAfterFilter: Post[] = [...posts];
 
 export const postService:IServiceContract = {
-    getAllPosts: (filter?: string, skip?: string, take?: string): ServiceResponse => {
+    getAllPosts: (filter?, skip?, take?): ServiceResponse => {
         if (filter) {
             let boolFilter: boolean;
             if (filter === "true") boolFilter = true;
@@ -61,7 +61,7 @@ export const postService:IServiceContract = {
         return respon
     },
 
-    getPostsById: (id: number): ServiceResponse => {
+    getPostsById: (id): ServiceResponse => {
         if (isNaN(id)) {
             const respon: ServiceResponse = {
                 status: "error",
@@ -90,7 +90,7 @@ export const postService:IServiceContract = {
         }
     },
 
-    CreatePost: async (body: CreatePostData[]) => {
+    CreatePost: async (body) => {
         try {
             let arrPosts: CreatePostData[] = []
             arrPosts = [...body]
@@ -127,7 +127,7 @@ export const postService:IServiceContract = {
             return respon
         }
     },
-    UpdatePost: async (id: number, data: UpdatePostData) => { //обробник обновлення
+    UpdatePost: async (id, data) => { //обробник обновлення
         try {
             if (isNaN(id)) { //первірка на число рут параметра
                 const respon: ServiceResponse = {

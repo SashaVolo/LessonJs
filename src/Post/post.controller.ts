@@ -1,21 +1,20 @@
 import { postService } from "./post.service"
-import type { Request,Response } from "express" //імпорт 
 import { IControllerContract } from "./post.types";
 //в контролері в мене немає визовів типів, які я створював, тому не імпортую
 
 export const postController:IControllerContract = {
-    getAllPosts: (req: Request,res:Response)=>{
-        const filter = req.query.filter as string | undefined;
-        const skip = req.query.skip as string | undefined;
-        const take = req.query.take as string | undefined;
+    getAllPosts: (req,res)=>{
+        const filter = req.query.filter
+        const skip = req.query.skip;
+        const take = req.query.take;
         const resp  = postService.getAllPosts(filter,skip,take)
-        if(resp.status =="error"){
+        if(resp.status =="error"||resp.data==undefined){
             res.status(400).json(resp.message)
             return
         }
         res.status(200).json(resp.data)    //відправляємо 
     },
-    getPostsById:(req: Request,res:Response)=>{
+    getPostsById:(req,res)=>{
         const id = Number(req.params.id)
         const resp = postService.getPostsById(id)
         if(resp.status =="error"){
@@ -28,7 +27,7 @@ export const postController:IControllerContract = {
         }
         res.status(200).json(resp.data)
     },
-    createPost: async (req: Request,res:Response)=>{
+    createPost: async (req,res)=>{
         const resp= await postService.CreatePost(req.body)
         if(resp.status =="error"){
             res.status(Number(resp.code)).json(resp.message)
@@ -36,7 +35,7 @@ export const postController:IControllerContract = {
         }
         res.status(200).json(resp.data)
     },
-    updatePost: async (req: Request,res:Response)=>{
+    updatePost: async (req,res)=>{
         const id = Number(req.params.id)
         const resp= await postService.UpdatePost(id, req.body);
 

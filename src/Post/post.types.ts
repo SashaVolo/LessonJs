@@ -26,15 +26,15 @@ export interface IServiceContract {
 }
 export interface IControllerContract {
     getAllPosts: (
-        req: Request<Record<string, never>, Post[] | string, object, { filter?: string; skip?: string; take?: string }>,
-        res: Response<Post[] | string>) => void
+        req: Request<Record<string, never>, Post[]|Post| string, object, { filter?: string; skip?: string; take?: string }>,
+        res: Response<Post[]|Post | string>) => void
     getPostsById: (
-        req: Request<{ id: string }, Post | string, object>,
-        res: Response<Post | string>) => void
+        req: Request<{ id: string }, Post[]|Post | string, object>,
+        res: Response<Post[]|Post| string>) => void
     createPost: (
-        req: Request<Record<string, never>, Post[] | string, CreatePostData[]>, 
-        res: Response<Post[] | string>) => Promise<void>;
+        req: Request<Record<string, never>, Post[]|Post | string, CreatePostData[]>, 
+        res: Response<Post[]|Post | string>) => Promise<void>;
     updatePost: (
-        req: Request<Record<string, never>, Post[] | string, UpdatePostData>, 
-        res: Response<Post[] | string>) => Promise<void>;
+        req: Request<Record<string, never>, Post[]|Post | string, UpdatePostData>, 
+        res: Response<Post[]|Post | string>) => Promise<void>;
 }
