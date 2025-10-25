@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -14,28 +9,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 model Post {
-  id          Int @unique @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
   description String
   pic         String
   likeCount   Int
-  tags        PostTag[]   //один пост має багато зв’язків у PostTag
+  tags        PostTag[] 
 }
 
 model Tag {
-  id     Int @unique @id @default(autoincrement())
-  name   String
-  posts  PostTag[]   //один тег має багато зв’язків у PostTag
+  id     Int      @id @default(autoincrement())
+  name   String @unique
+  posts  PostTag[]
 }
 
 model PostTag {
-  id      Int @unique @id @default(autoincrement())
+  postId Int
+  tagId  Int
 
-  // зв’язок з Post
-  post    Post  @relation(fields: [postId], references: [id])
-  postId  Int
-  // зв’язок з Tag
-  tag     Tag   @relation(fields: [tagId], references: [id])
-  tagId   Int
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
 }
-

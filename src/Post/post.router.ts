@@ -27,4 +27,7 @@ postRouter.post("/posts", postController.createPost);
 //Обновити пост за id
 postRouter.patch("/posts/:id",postController.updatePost);
 
+postRouter.delete("/posts/:id",postController.deletePost);
+
+
 export {postRouter}

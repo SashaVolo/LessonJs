@@ -1,6 +1,5 @@
 import express from "express"
 import type {Express} from "express"
-// const postRouter = require("./src/Post/post.router")
 import { postRouter } from "./post.router";
 
 

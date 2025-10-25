@@ -1,101 +1,116 @@
-import fs from "fs";
-import path from "path";
-import fsPromises from "fs/promises";
-import type { Post, CreatePostData, ServiceResponse, IServiceContract } from "./post.types"
+
+import type { CreatePostChecked, ServiceResponse, IServiceContract } from "./post.types"
+import { PrismaClient } from "../generated/prisma";
 
 
-const pat = path.join(__dirname, "../../posts.json");
-const posts: Post[] = JSON.parse(fs.readFileSync(pat, "utf8"));
-let postsCopyAfterFilter: Post[] = [...posts];
-
-export const postService:IServiceContract = {
-    getAllPosts: (filter?, skip?, take?): ServiceResponse => {
-        if (filter) {
-            let boolFilter: boolean;
-            if (filter === "true") boolFilter = true;
-            else if (filter === "false") boolFilter = false;
-            else {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "query filter isn't a bool",
-                    code: 400
-                }
-                return respon
-            }
-            if (boolFilter) postsCopyAfterFilter = posts.filter(post => post.name.includes("a"));
-        }
-
-        let postsCopyAfterSkip = [...postsCopyAfterFilter];
-        if (skip) {
-            const numSkip: number = Number(skip);
-            if (isNaN(numSkip)) {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "query skip isn`t a number",
-                    code: 400
-                }
-                return respon
-            }
-            postsCopyAfterSkip = postsCopyAfterFilter.slice(numSkip);
-        }
-
-        let postsCopyAfterTake = [...postsCopyAfterSkip];
-        if (take) {
-            const numTake: number = Number(take);
-            if (isNaN(numTake)) {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "query take isn`t a number",
-                    code: 400
-                }
-                return respon
-            }
-            postsCopyAfterTake = postsCopyAfterSkip.slice(0, numTake);
-        }
-        const respon: ServiceResponse = {
-            status: "succses",
-            message: `succses`,
-            data: postsCopyAfterTake,
-            code: 200
-        }
-        return respon
-    },
-
-    getPostsById: (id): ServiceResponse => {
-        if (isNaN(id)) {
-            const respon: ServiceResponse = {
-                status: "error",
-                message: "id isn`t a number",
-                code: 400
-            }
-            return respon
-        }
-
-        const findPost: Post | undefined = posts.find(post => post.id === id);
-        if (findPost != null) {
-            const respon: ServiceResponse = {
-                status: "succses",
-                message: `succses`,
-                data: findPost,
-                code: 200
-            }
-            return respon
-        } else {
-            const respon: ServiceResponse = {
-                status: "error",
-                message: "not found post",
-                code: 404
-            }
-            return respon
-        }
-    },
-
-    CreatePost: async (body) => {
+const client = new PrismaClient();
+export const postService: IServiceContract = {
+    getAllPosts: async (skip?, take?) => {
         try {
-            let arrPosts: CreatePostData[] = []
+            if (skip) {
+                const numSkip: number = Number(skip);
+                if (isNaN(numSkip)) {
+                    const respon: ServiceResponse = {
+                        status: "error",
+                        message: "query skip isn`t a number",
+                        code: 400
+                    }
+                    return respon
+                }
+            }
+            if (take) {
+                const numTake: number = Number(take);
+                if (isNaN(numTake)) {
+                    const respon: ServiceResponse = {
+                        status: "error",
+                        message: "query take isn`t a number",
+                        code: 400
+                    }
+                    return respon
+                }
+                const posts = await client.post.findMany({ // усі елементи в бд
+                    take: Number(take),
+                    skip: skip ? Number(skip) : 0
+                })
+                const respon: ServiceResponse = {
+                    status: "succses",
+                    message: `succses`,
+                    dataPosts: posts,
+                    code: 200
+                }
+                return respon
+            }
+            else {
+                const posts = await client.post.findMany({ // усі елементи в бд
+                    skip: skip ? Number(skip) : 0
+                })
+                const respon: ServiceResponse = {
+                    status: "succses",
+                    message: `succses`,
+                    dataPosts: posts,
+                    code: 200
+                }
+                return respon
+            }
+        }
+        catch (err) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: `server error 500 ${err}`,
+                code: 500
+            }
+            return respon
+        }
+    },
+
+    getPostsById: async (id) => {
+        try {
+            if (isNaN(id)) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "id isn`t a number",
+                    code: 400
+                }
+                return respon
+            }
+            const findPost = await client.post.findUnique({ // знаходження елементу в бд
+                where: { id },
+                include:{
+                    tags:true
+                }
+            })
+            if (findPost) { // перевірка на наявність
+                const respon: ServiceResponse = {
+                    status: "succses",
+                    message: `succses`,
+                    dataPost: findPost,
+                    code: 200
+                }
+                return respon
+            } else {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "not found post",
+                    code: 404
+                }
+                return respon
+            }
+        } catch (err) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: `server error 500 ${err}`,
+                code: 500
+            }
+            return respon
+        }
+    },
+
+    CreatePost: async (body: CreatePostChecked[]): Promise<ServiceResponse> => {
+        try {
+            let arrPosts: CreatePostChecked[] = []
             arrPosts = [...body]
             for (const p of arrPosts) {
-                let { name, description, pic, likecount } = p
+                let { name, description, pic, likeCount, tags } = p
                 if (!name || !description || !pic) {
                     const respon: ServiceResponse = {
                         status: "error",
@@ -104,16 +119,42 @@ export const postService:IServiceContract = {
                     }
                     return respon
                 }
-                if (!likecount) likecount = 0
-                const id = posts.length + 1
-                const post = { id, name, description, pic, likecount }
-                posts.push(post)
+                if (!likeCount) likeCount = 0
+                if (!Array.isArray(tags) || tags.length === 0) {
+                    await client.post.create({ // створення елементу в бд, якщо не ввели теги
+                        data: {
+                            name: name,
+                            description: description,
+                            pic: pic,
+                            likeCount: likeCount
+
+                        }
+                    })
+                }
+                else {
+                    await client.post.create({ // створення елементу в бд , якщо ввели теги
+                        data: {
+                            name: name,
+                            description: description,
+                            pic: pic,
+                            likeCount: likeCount,
+                            tags: {
+                                create: tags.map(tagName => ({
+                                    tag: {
+                                        connectOrCreate: {
+                                            where: { name: tagName },
+                                            create: { name: tagName }
+                                        }
+                                    }
+                                }))
+                            }
+                        }
+                    })
+                }
             }
-            await fsPromises.writeFile("posts.json", JSON.stringify(posts, null, 2)) //перезапис нового масиву
             const respon: ServiceResponse = {
                 status: "succses",
                 message: `succses`,
-                data: posts,
                 code: 200
             }
             return respon
@@ -137,8 +178,10 @@ export const postService:IServiceContract = {
                 };
                 return respon
             }
-            const findPost: Post | undefined = posts.find(post => post.id === id); // знаходження поста з id
-            if (findPost == null) {
+            const findPost = await client.post.findUnique({ // знаходження елемента в бд
+                where: { id }
+            });
+            if (findPost == null) { // перевірка на наявність
                 const respon: ServiceResponse = {
                     status: "error",
                     message: "not found post",
@@ -156,7 +199,13 @@ export const postService:IServiceContract = {
                     }
                     return respon
                 }
-                findPost.name = data.name;
+                await client.post.update({  // оновлення в бд
+                    where: { id },
+                    data: {
+                        name: data.name
+                    }
+                })
+
             }
             if (data.description) {
                 if (typeof data.description !== "string") { //також тут валідація на типи
@@ -167,7 +216,13 @@ export const postService:IServiceContract = {
                     }
                     return respon
                 }
-                findPost.description = data.description;
+                await client.post.update({  // оновлення в бд
+                    where: { id },
+                    data: {
+                        description: data.description
+                    }
+                })
+
             }
             if (data.pic) {
                 if (typeof data.pic !== "string") {
@@ -178,10 +233,16 @@ export const postService:IServiceContract = {
                     }
                     return respon
                 }
-                findPost.pic = data.pic;
+                await client.post.update({ // оновлення в бд
+                    where: { id },
+                    data: {
+                        pic: data.pic
+                    }
+                })
+
             }
-            if (data.likecount) {
-                if (typeof data.likecount !== "string") {
+            if (data.likeCount) {
+                if (typeof data.likeCount !== "string") {
                     const respon: ServiceResponse = {
                         status: "error",
                         message: "Field type likecount",
@@ -189,18 +250,54 @@ export const postService:IServiceContract = {
                     }
                     return respon
                 }
-                findPost.likecount = data.likecount;
+                await client.post.update({  // оновлення в бд
+                    where: { id },
+                    data: {
+                        likeCount: data.likeCount
+                    }
+                })
             }
-
-            await fsPromises.writeFile("posts.json", JSON.stringify(posts, null, 2)) //перезапис нового масиву
             const respon: ServiceResponse = {
                 status: "succses",
                 message: `succses`,
-                data: posts,
                 code: 200
             }
             return respon
 
+        } catch (err) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: `server error 500 ${err}`,
+                code: 500
+            }
+            return respon
+        }
+    },
+    deletePost: async (id) => {
+        try {
+            if (isNaN(id)) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "id isn`t a number",
+                    code: 400
+                }
+                return respon
+            }
+
+            const postId = Number(id)
+            const deletePost = await client.post.delete({ // видалення елементу в бд
+                where: { id: postId },
+                include:{
+                    tags: true
+                }
+            })
+            const respon: ServiceResponse = {
+                status: "succses",
+                message: `succses`,
+                dataPost: deletePost,
+                code: 200
+            }
+            return respon
         } catch (err) {
             const respon: ServiceResponse = {
                 status: "error",
