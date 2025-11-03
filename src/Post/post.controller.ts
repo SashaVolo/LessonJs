@@ -17,11 +17,7 @@ export const postController:IControllerContract = {
         const id = Number(req.params.id)
         const resp = await postService.getPostsById(id)
         if(resp.status =="error"){
-            if(resp.message=="not found post"){ //якщо не знайдено то 404
-                res.status(404).json(resp.message)
-                return
-            }
-            res.status(400).json(resp.message) //якщо інше то це не число, 400
+            res.status(resp.code).json(resp.message)
             return
         }
         res.status(200).json(resp.dataPost)
@@ -37,14 +33,13 @@ export const postController:IControllerContract = {
     },
     deletePost: async (req,res) =>{
         const id = Number(req.params.id)
-        const resp = await postService.deletePost(id)
+        const resp = await postService.deletePost
+        (id)
         if(resp.status =="error"){
-            if(resp.message=="not found post"){ //якщо не знайдено то 404
-                res.status(404).json(resp.message)
-                return
-            }
-            res.status(400).json(resp.message) //якщо інше то це не число, 400
+            if(resp.status =="error"){
+            res.status(resp.code).json(resp.message)
             return
+        }
         }
         res.status(200).json(resp.dataPost)
     }

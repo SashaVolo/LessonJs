@@ -1,175 +1,151 @@
 
-import type { CreatePostChecked, ServiceResponse, IServiceContract } from "./post.types"
-import { PrismaClient } from "../generated/prisma";
+import type { CreatePostChecked, ServiceResponse, IServiceContract, UpdatePostChecked, Post } from "./post.types"
+
+import { PostRepository } from "./post.repository";
 
 
-const client = new PrismaClient();
 export const postService: IServiceContract = {
     getAllPosts: async (skip?, take?) => {
-        try {
-            if (skip) {
-                const numSkip: number = Number(skip);
-                if (isNaN(numSkip)) {
-                    const respon: ServiceResponse = {
-                        status: "error",
-                        message: "query skip isn`t a number",
-                        code: 400
-                    }
-                    return respon
-                }
-            }
-            if (take) {
-                const numTake: number = Number(take);
-                if (isNaN(numTake)) {
-                    const respon: ServiceResponse = {
-                        status: "error",
-                        message: "query take isn`t a number",
-                        code: 400
-                    }
-                    return respon
-                }
-                const posts = await client.post.findMany({ // усі елементи в бд
-                    take: Number(take),
-                    skip: skip ? Number(skip) : 0
-                })
-                const respon: ServiceResponse = {
-                    status: "succses",
-                    message: `succses`,
-                    dataPosts: posts,
-                    code: 200
-                }
-                return respon
-            }
-            else {
-                const posts = await client.post.findMany({ // усі елементи в бд
-                    skip: skip ? Number(skip) : 0
-                })
-                const respon: ServiceResponse = {
-                    status: "succses",
-                    message: `succses`,
-                    dataPosts: posts,
-                    code: 200
-                }
-                return respon
-            }
-        }
-        catch (err) {
-            const respon: ServiceResponse = {
-                status: "error",
-                message: `server error 500 ${err}`,
-                code: 500
-            }
-            return respon
-        }
-    },
-
-    getPostsById: async (id) => {
-        try {
-            if (isNaN(id)) {
+        let posts:Post[] | null
+        let numSkip: number = 0
+        if (skip) {
+            numSkip = Number(skip);
+            if (isNaN(numSkip)) {
                 const respon: ServiceResponse = {
                     status: "error",
-                    message: "id isn`t a number",
+                    message: "query skip isn`t a number",
                     code: 400
                 }
                 return respon
             }
-            const findPost = await client.post.findUnique({ // знаходження елементу в бд
-                where: { id },
-                include:{
-                    tags:true
-                }
-            })
-            if (findPost) { // перевірка на наявність
-                const respon: ServiceResponse = {
-                    status: "succses",
-                    message: `succses`,
-                    dataPost: findPost,
-                    code: 200
-                }
-                return respon
-            } else {
+        }
+        else{
+            numSkip = 0
+        }
+        if (take) {
+            const numTake: number = Number(take);
+            if (isNaN(numTake)) {
                 const respon: ServiceResponse = {
                     status: "error",
-                    message: "not found post",
+                    message: "query take isn`t a number",
+                    code: 400
+                }
+                return respon
+            }
+            posts = await PostRepository.getAllPosts({ skip: numSkip, take: Number(take) }) // запит у бд
+        }
+        else{
+            posts = await PostRepository.getAllPosts({ skip: numSkip }) // запит у бд
+        }
+
+        if (posts == null) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: "Not found posts",
+                code: 404
+            }
+            return respon
+        }
+        const respon: ServiceResponse = {
+            status: "success",
+            message: `success`,
+            dataPosts: posts,
+            code: 200
+        }
+        return respon
+    },
+
+    getPostsById: async (id) => {
+        if (isNaN(id)) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: "id isn`t a number",
+                code: 400
+            }
+            return respon
+        }
+        const findPost = await PostRepository.getPostsById(id) //запит у бд
+        if (findPost == null) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Not found posts",
                     code: 404
                 }
                 return respon
             }
-        } catch (err) {
             const respon: ServiceResponse = {
-                status: "error",
-                message: `server error 500 ${err}`,
-                code: 500
-            }
-            return respon
-        }
-    },
-
-    CreatePost: async (body: CreatePostChecked[]): Promise<ServiceResponse> => {
-        try {
-            let arrPosts: CreatePostChecked[] = []
-            arrPosts = [...body]
-            for (const p of arrPosts) {
-                let { name, description, pic, likeCount, tags } = p
-                if (!name || !description || !pic) {
-                    const respon: ServiceResponse = {
-                        status: "error",
-                        message: `server didn't can to work with this data`,
-                        code: 422
-                    }
-                    return respon
-                }
-                if (!likeCount) likeCount = 0
-                if (!Array.isArray(tags) || tags.length === 0) {
-                    await client.post.create({ // створення елементу в бд, якщо не ввели теги
-                        data: {
-                            name: name,
-                            description: description,
-                            pic: pic,
-                            likeCount: likeCount
-
-                        }
-                    })
-                }
-                else {
-                    await client.post.create({ // створення елементу в бд , якщо ввели теги
-                        data: {
-                            name: name,
-                            description: description,
-                            pic: pic,
-                            likeCount: likeCount,
-                            tags: {
-                                create: tags.map(tagName => ({
-                                    tag: {
-                                        connectOrCreate: {
-                                            where: { name: tagName },
-                                            create: { name: tagName }
-                                        }
-                                    }
-                                }))
-                            }
-                        }
-                    })
-                }
-            }
-            const respon: ServiceResponse = {
-                status: "succses",
-                message: `succses`,
+                status: "success",
+                message: `success`,
+                dataPost: findPost,
                 code: 200
             }
             return respon
-        }
-        catch (err) {
-            const respon: ServiceResponse = {
-                status: "error",
-                message: `server error 500 ${err}`,
-                code: 500
+    },
+
+    CreatePost: async (body: CreatePostChecked[]) => {
+        let arrPosts: CreatePostChecked[] = []
+        arrPosts = [...body]
+        let dataRep: { data: CreatePostChecked } //для відправки у бд
+        for (const p of arrPosts) {
+            let { name, description, pic, likeCount, tags } = p
+            if (!name || !description || !pic) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: `server didn't can to work with this data`,
+                    code: 422
+                }
+                return respon
             }
-            return respon
+            if (!likeCount) likeCount = 0
+            if (!Array.isArray(tags) || tags.length === 0) { //перевірка на наявніть тегів
+                dataRep = {
+                    data: {
+                        name: name,
+                        description: description,
+                        pic: pic,
+                        likeCount: likeCount
+                    }
+                }
+            }
+            else { //якщо теги є тоді прив'язати чи створити теги
+                dataRep = {
+                    data: {
+                        name: name,
+                        description: description,
+                        pic: pic,
+                        likeCount: likeCount,
+                        tags: {
+                            create: tags.map(tagName => ({
+                                tag: {
+                                    connectOrCreate: {
+                                        where: { name: tagName },
+                                        create: { name: tagName }
+                                    }
+                                }
+                            }))
+                        }
+                    }
+                }
+            }
+            const createPost = await PostRepository.CreatePost(dataRep)
+            if (createPost == null) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Not found posts",
+                    code: 404
+                }
+                return respon
+            }
         }
+        const respon: ServiceResponse = {
+            status: "success",
+            message: `success`,
+            code: 200
+        }
+        return respon
     },
     UpdatePost: async (id, data) => { //обробник обновлення
-        try {
+            let dataRep: UpdatePostChecked ={} //для відправки у бд
             if (isNaN(id)) { //первірка на число рут параметра
                 const respon: ServiceResponse = {
                     status: "error",
@@ -178,18 +154,6 @@ export const postService: IServiceContract = {
                 };
                 return respon
             }
-            const findPost = await client.post.findUnique({ // знаходження елемента в бд
-                where: { id }
-            });
-            if (findPost == null) { // перевірка на наявність
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "not found post",
-                    code: 404
-                }
-                return respon
-            }
-
             if (data.name) {
                 if (typeof data.name !== "string") {
                     const respon: ServiceResponse = {        //заміна даних на нові, якщо вони є у запросі, якщо користувач введе нові властивості, нічого не відбудетьсЯ
@@ -199,13 +163,7 @@ export const postService: IServiceContract = {
                     }
                     return respon
                 }
-                await client.post.update({  // оновлення в бд
-                    where: { id },
-                    data: {
-                        name: data.name
-                    }
-                })
-
+                dataRep.name=data.name //для відправки у бд
             }
             if (data.description) {
                 if (typeof data.description !== "string") { //також тут валідація на типи
@@ -216,13 +174,7 @@ export const postService: IServiceContract = {
                     }
                     return respon
                 }
-                await client.post.update({  // оновлення в бд
-                    where: { id },
-                    data: {
-                        description: data.description
-                    }
-                })
-
+                dataRep.description=data.description //для відправки у бд
             }
             if (data.pic) {
                 if (typeof data.pic !== "string") {
@@ -233,16 +185,10 @@ export const postService: IServiceContract = {
                     }
                     return respon
                 }
-                await client.post.update({ // оновлення в бд
-                    where: { id },
-                    data: {
-                        pic: data.pic
-                    }
-                })
-
+                dataRep.pic=data.pic //для відправки у бд
             }
             if (data.likeCount) {
-                if (typeof data.likeCount !== "string") {
+                if (typeof data.likeCount !== "number") {
                     const respon: ServiceResponse = {
                         status: "error",
                         message: "Field type likecount",
@@ -250,31 +196,25 @@ export const postService: IServiceContract = {
                     }
                     return respon
                 }
-                await client.post.update({  // оновлення в бд
-                    where: { id },
-                    data: {
-                        likeCount: data.likeCount
-                    }
-                })
+                dataRep.likeCount=data.likeCount //для відправки у бд
+            }
+            const updatePost= await PostRepository.UpdatePost(id,dataRep) //запит у бд для оновлення
+            if (updatePost == null) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Not found post",
+                    code: 404
+                }
+                return respon
             }
             const respon: ServiceResponse = {
-                status: "succses",
-                message: `succses`,
+                status: "success",
+                message: `success`,
                 code: 200
             }
             return respon
-
-        } catch (err) {
-            const respon: ServiceResponse = {
-                status: "error",
-                message: `server error 500 ${err}`,
-                code: 500
-            }
-            return respon
-        }
     },
     deletePost: async (id) => {
-        try {
             if (isNaN(id)) {
                 const respon: ServiceResponse = {
                     status: "error",
@@ -285,26 +225,21 @@ export const postService: IServiceContract = {
             }
 
             const postId = Number(id)
-            const deletePost = await client.post.delete({ // видалення елементу в бд
-                where: { id: postId },
-                include:{
-                    tags: true
+            const deletePost = await PostRepository.deletePost(postId) //запит у бд для видалення
+            if (deletePost == null) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Not found posts",
+                    code: 404
                 }
-            })
+                return respon
+            }
             const respon: ServiceResponse = {
-                status: "succses",
-                message: `succses`,
+                status: "success",
+                message: `success`,
                 dataPost: deletePost,
                 code: 200
             }
             return respon
-        } catch (err) {
-            const respon: ServiceResponse = {
-                status: "error",
-                message: `server error 500 ${err}`,
-                code: 500
-            }
-            return respon
-        }
     }
 };

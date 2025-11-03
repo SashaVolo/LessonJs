@@ -9,15 +9,16 @@ export type PostWithTag = Prisma.PostGetPayload<{
 }>
 export type CreatePost = Prisma.PostCreateInput
 export type CreatePostChecked = Prisma.PostUncheckedCreateInput
+
 export type UpdatePost = Prisma.PostUpdateInput
 export type UpdatePostChecked = Prisma.PostUncheckedUpdateInput
 
 export interface ServiceResponse { //тип відповіді
-    status: "succses" | "error"
-    dataPost?: PostWithTag
-    dataPosts?: Post[]
+    status: "success" | "error"
+    dataPost?: PostWithTag 
+    dataPosts?: Post[] 
     message?: string
-    code?: number
+    code: number
 }
 
 export interface IServiceContract {
@@ -44,8 +45,15 @@ export interface IControllerContract {
         req: Request<{ id: string }, Post | string, object>,
         res: Response<Post| string>) => Promise<void>
 }
+export interface IRepositoryContract {
+    getAllPosts: (skipTakeObj: {skip: number, take: number}|{skip: number}) => Promise<Post[] | null>
+    getPostsById: (id: number) => Promise<PostWithTag | null>
+    CreatePost: (body: {data: CreatePostChecked}) => Promise<CreatePostChecked | null>
+    UpdatePost: (id: number, data: UpdatePostChecked) => Promise<UpdatePostChecked | null>
+    deletePost: (id: number) => Promise<PostWithTag | null>
+}
 
 // інформація:
-// повну інформацію про елемент можна дізначися через рут параметр,
+// повну інформацію про елемент можна дізнатися через рут параметр,
 // Можна створювати елемент з тегами чи без
 //не можна змінювати теги у елемента
