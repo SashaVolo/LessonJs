@@ -1,12 +1,12 @@
 import { client } from "../client/client";
 import { Prisma } from "../generated/prisma";
-import { IRepositoryContract } from "./post.types";
+import { IRepositoryContract } from "./tag.types";
 
-export const PostRepository: IRepositoryContract = {
-    getAllPosts: async (skipTakeObj) => {
+export const tagRepository: IRepositoryContract = {
+    getAllTags: async (skipTakeObj) => {
         try {
-            const posts = await client.post.findMany(skipTakeObj)
-            return posts
+            const Tags = await client.tag.findMany(skipTakeObj)
+            return Tags
         }
         catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -36,19 +36,19 @@ export const PostRepository: IRepositoryContract = {
             return null
         }
     },
-    getPostsById: async (id) => {
+    getTagsById: async (id) => {
         try {
-            const findPost = await client.post.findUnique({ // знаходження елементу в бд
+            const findTag = await client.tag.findUnique({ // знаходження елементу в бд
                 where: { id },
                 include: {
-                    tags: {
+                    posts: {
                         include: {
-                            tag: true
+                            post: true
                         }
                     }
                 }
             })
-            return findPost
+            return findTag
         }
         catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -78,10 +78,10 @@ export const PostRepository: IRepositoryContract = {
             return null
         }
     },
-    CreatePost: async (dataRep) => {
+    createTag: async (dataRep) => {
         try {
-            const createPost = await client.post.create(dataRep)
-            return createPost
+            const createTag = await client.tag.create(dataRep)
+            return createTag
         }
         catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -111,18 +111,14 @@ export const PostRepository: IRepositoryContract = {
             return null
         }
     },
-    UpdatePost: async (id, dataRep) => {
+    updateTag: async (id, dataRep) => {
         try {
-            if (dataRep.tags) {
-                await client.postTag.deleteMany({
-                    where: { postId: id }
-                })
-            }
-            const updatePost = await client.post.update({  // оновлення в бд
+            const updateTag = await client.tag.update({  // оновлення в бд
                 where: { id },
                 data: dataRep
             })
-            return updatePost
+
+            return updateTag
         }
         catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -152,23 +148,23 @@ export const PostRepository: IRepositoryContract = {
             return null
         }
     },
-    deletePost: async (id) => {
+    deleteTag: async (id) => {
         try {
             await client.postTag.deleteMany({
                 where: { postId: id }
             })
 
-            const deletePost = await client.post.delete({ // видалення елементу в бд
+            const deleteTag = await client.tag.delete({ // видалення елементу в бд
                 where: { id },
                 include: {
-                    tags: {
+                    posts: {
                         include: {
-                            tag: true
+                            post: true
                         }
                     }
                 }
             })
-            return deletePost
+            return deleteTag
         }
         catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {

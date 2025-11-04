@@ -1,6 +1,5 @@
 import { postService } from "./post.service"
 import { IControllerContract } from "./post.types";
-//в контролері в мене немає визовів типів, які я створював, тому не імпортую
 
 export const postController:IControllerContract = {
     getAllPosts:async (req,res)=>{

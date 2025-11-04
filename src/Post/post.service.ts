@@ -6,7 +6,7 @@ import { PostRepository } from "./post.repository";
 
 export const postService: IServiceContract = {
     getAllPosts: async (skip?, take?) => {
-        let posts:Post[] | null
+        let posts: Post[] | null
         let numSkip: number = 0
         if (skip) {
             numSkip = Number(skip);
@@ -19,7 +19,7 @@ export const postService: IServiceContract = {
                 return respon
             }
         }
-        else{
+        else {
             numSkip = 0
         }
         if (take) {
@@ -34,7 +34,7 @@ export const postService: IServiceContract = {
             }
             posts = await PostRepository.getAllPosts({ skip: numSkip, take: Number(take) }) // запит у бд
         }
-        else{
+        else {
             posts = await PostRepository.getAllPosts({ skip: numSkip }) // запит у бд
         }
 
@@ -66,20 +66,20 @@ export const postService: IServiceContract = {
         }
         const findPost = await PostRepository.getPostsById(id) //запит у бд
         if (findPost == null) {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "Not found posts",
-                    code: 404
-                }
-                return respon
-            }
             const respon: ServiceResponse = {
-                status: "success",
-                message: `success`,
-                dataPost: findPost,
-                code: 200
+                status: "error",
+                message: "Not found posts",
+                code: 404
             }
             return respon
+        }
+        const respon: ServiceResponse = {
+            status: "success",
+            message: `success`,
+            dataPost: findPost,
+            code: 200
+        }
+        return respon
     },
 
     CreatePost: async (body: CreatePostChecked[]) => {
@@ -145,101 +145,121 @@ export const postService: IServiceContract = {
         return respon
     },
     UpdatePost: async (id, data) => { //обробник обновлення
-            let dataRep: UpdatePostChecked ={} //для відправки у бд
-            if (isNaN(id)) { //первірка на число рут параметра
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "id isn`t a number",
-                    code: 400
-                };
-                return respon
-            }
-            if (data.name) {
-                if (typeof data.name !== "string") {
-                    const respon: ServiceResponse = {        //заміна даних на нові, якщо вони є у запросі, якщо користувач введе нові властивості, нічого не відбудетьсЯ
-                        status: "error",
-                        message: "Field type name",
-                        code: 422
-                    }
-                    return respon
-                }
-                dataRep.name=data.name //для відправки у бд
-            }
-            if (data.description) {
-                if (typeof data.description !== "string") { //також тут валідація на типи
-                    const respon: ServiceResponse = {
-                        status: "error",
-                        message: "Field type description",
-                        code: 422
-                    }
-                    return respon
-                }
-                dataRep.description=data.description //для відправки у бд
-            }
-            if (data.pic) {
-                if (typeof data.pic !== "string") {
-                    const respon: ServiceResponse = {
-                        status: "error",
-                        message: "Field type pic",
-                        code: 422
-                    }
-                    return respon
-                }
-                dataRep.pic=data.pic //для відправки у бд
-            }
-            if (data.likeCount) {
-                if (typeof data.likeCount !== "number") {
-                    const respon: ServiceResponse = {
-                        status: "error",
-                        message: "Field type likecount",
-                        code: 422
-                    }
-                    return respon
-                }
-                dataRep.likeCount=data.likeCount //для відправки у бд
-            }
-            const updatePost= await PostRepository.UpdatePost(id,dataRep) //запит у бд для оновлення
-            if (updatePost == null) {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "Not found post",
-                    code: 404
-                }
-                return respon
-            }
+        let dataRep: UpdatePostChecked = {} //для відправки у бд
+        if (isNaN(id)) { //первірка на число рут параметра
             const respon: ServiceResponse = {
-                status: "success",
-                message: `success`,
-                code: 200
+                status: "error",
+                message: "id isn`t a number",
+                code: 400
+            };
+            return respon
+        }
+        if (data.name) {
+            if (typeof data.name !== "string") {
+                const respon: ServiceResponse = {        //заміна даних на нові, якщо вони є у запросі, якщо користувач введе нові властивості, нічого не відбудетьсЯ
+                    status: "error",
+                    message: "Field type name",
+                    code: 422
+                }
+                return respon
+            }
+            dataRep.name = data.name //для відправки у бд
+        }
+        if (data.description) {
+            if (typeof data.description !== "string") { //також тут валідація на типи
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Field type description",
+                    code: 422
+                }
+                return respon
+            }
+            dataRep.description = data.description //для відправки у бд
+        }
+        if (data.pic) {
+            if (typeof data.pic !== "string") {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Field type pic",
+                    code: 422
+                }
+                return respon
+            }
+            dataRep.pic = data.pic //для відправки у бд
+        }
+        if (data.likeCount) {
+            if (typeof data.likeCount !== "number") {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Field type likecount",
+                    code: 422
+                }
+                return respon
+            }
+            dataRep.likeCount = data.likeCount //для відправки у бд
+        }
+        if (data.tags) {
+            if (!Array.isArray(data.tags)) {
+                const respon: ServiceResponse = {
+                    status: "error",
+                    message: "Tags must be an array ",
+                    code: 422
+                };
+                return respon;
+            }
+            dataRep.tags = { // для запиту у бд на перезапис тегів
+                create: data.tags.map(tagName => ({
+                    tag: {
+                        connectOrCreate: {
+                            where: { name: tagName },
+                            create: { name: tagName }
+                        }
+                    }
+                }))
+            }
+        }
+        const updatePost = await PostRepository.UpdatePost(id, dataRep) //запит у бд для оновлення
+        if (updatePost == null) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: "Not found post",
+                code: 404
             }
             return respon
+        }
+        const respon: ServiceResponse = {
+            status: "success",
+            message: `success`,
+            code: 200
+        }
+        return respon
     },
     deletePost: async (id) => {
-            if (isNaN(id)) {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "id isn`t a number",
-                    code: 400
-                }
-                return respon
-            }
-
-            const postId = Number(id)
-            const deletePost = await PostRepository.deletePost(postId) //запит у бд для видалення
-            if (deletePost == null) {
-                const respon: ServiceResponse = {
-                    status: "error",
-                    message: "Not found posts",
-                    code: 404
-                }
-                return respon
-            }
+        if (isNaN(id)) {
             const respon: ServiceResponse = {
-                status: "success",
-                message: `success`,
-                dataPost: deletePost,
-                code: 200
+                status: "error",
+                message: "id isn`t a number",
+                code: 400
             }
             return respon
+        }
+
+        const postId = Number(id)
+        const deletePost = await PostRepository.deletePost(postId) //запит у бд для видалення
+        if (deletePost == null) {
+            const respon: ServiceResponse = {
+                status: "error",
+                message: "Not found posts",
+                code: 404
+            }
+            return respon
+        }
+        const respon: ServiceResponse = {
+            status: "success",
+            message: `success`,
+            dataPost: deletePost,
+            code: 200
+        }
+        return respon
     }
 };

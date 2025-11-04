@@ -4,7 +4,11 @@ import { Prisma } from "../generated/prisma";
 export type Post = Prisma.PostGetPayload<{}> //типи prisma
 export type PostWithTag = Prisma.PostGetPayload<{
     include:{
-        tags: true
+        tags:{
+            include:{
+                tag: true
+            }
+        }
     }
 }>
 export type CreatePost = Prisma.PostCreateInput
@@ -55,5 +59,15 @@ export interface IRepositoryContract {
 
 // інформація:
 // повну інформацію про елемент можна дізнатися через рут параметр,
-// Можна створювати елемент з тегами чи без
-//не можна змінювати теги у елемента
+// Можна створювати елемент з тегами чи без. теги вказуємо масивом назв тегів, теги створяться, якщо таких назв не було 
+// [
+//   {
+//     "name": "yhryhthyj",
+//     "description": "Описаниеого поста",
+//     "pic": "https://picsum.photos/200",
+//     "likecount": 20,
+//     "tags": ["tag1","tag3"]
+//   }
+// ]
+// можна змінювати теги у елемента через patch запит, теги вказуємо масивом назв тегів, теги створяться, якщо таких назв не було
+//АЛЕ ЦЕ ПЕРЕЗАПИС ТЕГІВ. не додавання 
