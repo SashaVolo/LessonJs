@@ -22,18 +22,17 @@ export const postController:IControllerContract = {
         res.status(200).json(resp.dataPost)
     },
     createPost: async (req,res)=>{
-        const resp= await postService.CreatePost(req.body)
+        const resp= await postService.CreatePost(req.body,res.locals.userId)
         res.status(Number(resp.code)).json(resp.message)
     },
     updatePost: async (req,res)=>{
         const id = Number(req.params.id)
-        const resp= await postService.UpdatePost(id, req.body);
+        const resp= await postService.UpdatePost(id, req.body,res.locals.userId);
         res.status(Number(resp.code)).json(resp.message)   
     },
     deletePost: async (req,res) =>{
         const id = Number(req.params.id)
-        const resp = await postService.deletePost
-        (id)
+        const resp = await postService.deletePost(id,res.locals.userId)
         if(resp.status =="error"){
             if(resp.status =="error"){
             res.status(resp.code).json(resp.message)

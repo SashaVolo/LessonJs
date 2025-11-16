@@ -9,6 +9,7 @@ export type PostWithTag = Prisma.PostGetPayload<{
                 tag: true
             }
         }
+        
     }
 }>
 export type CreatePost = Prisma.PostCreateInput
@@ -28,9 +29,9 @@ export interface ServiceResponse { //тип відповіді
 export interface IServiceContract {
     getAllPosts: (skip?: string, take?: string) => Promise<ServiceResponse>
     getPostsById: (id: number) => Promise<ServiceResponse>
-    CreatePost: (body: CreatePostChecked[]) => Promise<ServiceResponse>
-    UpdatePost: (id: number, data: UpdatePostChecked) => Promise<ServiceResponse>
-    deletePost: (id: number) => Promise<ServiceResponse>
+    CreatePost: (body: CreatePostChecked[],id: number) => Promise<ServiceResponse>
+    UpdatePost: (id: number, data: UpdatePostChecked,userId: number) => Promise<ServiceResponse>
+    deletePost: (id: number,userId: number) => Promise<ServiceResponse>
 }
 export interface IControllerContract {
     getAllPosts: (
@@ -44,7 +45,7 @@ export interface IControllerContract {
         res: Response<string>) => Promise<void>;
     updatePost: (
         req: Request<Record<string, never>, string, UpdatePostChecked>, 
-        res: Response<string>) => Promise<void>;
+        res: Response<string,{ userId: number }>) => Promise<void>;
     deletePost: (
         req: Request<{ id: string }, Post | string, object>,
         res: Response<Post| string>) => Promise<void>

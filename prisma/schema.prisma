@@ -14,13 +14,28 @@ model Post {
   description String
   pic         String
   likeCount   Int
+  createdBy   Int       
+  user        User      @relation(fields: [createdBy], references: [id])
   tags        PostTag[] 
+  likedBy     PostLike[] //пользователи, которые лайкнули
+  
 }
 
 model Tag {
   id     Int      @id @default(autoincrement())
   name   String @unique
   posts  PostTag[]
+}
+model User {
+  id Int @id @default(autoincrement())
+  firstName String
+  secondName String
+  email String @unique
+  avatar String @unique
+  password String @unique
+  isAdmin Boolean @default(false)
+  createdPosts Post[]
+  likedPosts PostLike[] // лайкнутые посты 
 }
 
 model PostTag {
@@ -31,4 +46,14 @@ model PostTag {
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
+}
+
+model PostLike {
+  userId Int
+  postId Int
+
+  user   User @relation(fields: [userId], references: [id])
+  post   Post @relation(fields: [postId], references: [id])
+
+  @@id([userId, postId]) 
 }

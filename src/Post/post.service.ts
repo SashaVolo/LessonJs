@@ -82,7 +82,8 @@ export const postService: IServiceContract = {
         return respon
     },
 
-    CreatePost: async (body: CreatePostChecked[]) => {
+    CreatePost: async (body: CreatePostChecked[],id:number) => {
+        
         let arrPosts: CreatePostChecked[] = []
         arrPosts = [...body]
         let dataRep: { data: CreatePostChecked } //для відправки у бд
@@ -97,19 +98,22 @@ export const postService: IServiceContract = {
                 return respon
             }
             if (!likeCount) likeCount = 0
+            let createdBy = id;
             if (!Array.isArray(tags) || tags.length === 0) { //перевірка на наявніть тегів
                 dataRep = {
                     data: {
+                        createdBy: createdBy,
                         name: name,
                         description: description,
                         pic: pic,
-                        likeCount: likeCount
+                        likeCount: likeCount,
                     }
                 }
             }
             else { //якщо теги є тоді прив'язати чи створити теги
                 dataRep = {
                     data: {
+                        createdBy: createdBy,
                         name: name,
                         description: description,
                         pic: pic,
@@ -144,7 +148,7 @@ export const postService: IServiceContract = {
         }
         return respon
     },
-    UpdatePost: async (id, data) => { //обробник обновлення
+    UpdatePost: async (id, data,userId) => { //обробник обновлення
         let dataRep: UpdatePostChecked = {} //для відправки у бд
         if (isNaN(id)) { //первірка на число рут параметра
             const respon: ServiceResponse = {
@@ -152,6 +156,23 @@ export const postService: IServiceContract = {
                 message: "id isn`t a number",
                 code: 400
             };
+            return respon
+        }
+        const findPost = await PostRepository.getPostsById(id)
+        if(!findPost){
+            const respon: ServiceResponse = {
+                status:"error",
+                message: "not found post",
+                code: 404,
+            }
+            return respon
+        }
+        if(findPost.createdBy!==userId){
+            const respon: ServiceResponse = {
+                status:"error",
+                message: "you dont have permissions",
+                code: 401,
+            }
             return respon
         }
         if (data.name) {
@@ -234,7 +255,7 @@ export const postService: IServiceContract = {
         }
         return respon
     },
-    deletePost: async (id) => {
+    deletePost: async (id,userId) => {
         if (isNaN(id)) {
             const respon: ServiceResponse = {
                 status: "error",
@@ -245,6 +266,23 @@ export const postService: IServiceContract = {
         }
 
         const postId = Number(id)
+        const findPost = await PostRepository.getPostsById(id)
+        if(!findPost){
+            const respon: ServiceResponse = {
+                status:"error",
+                message: "not found post",
+                code: 404,
+            }
+            return respon
+        }
+        if(findPost.createdBy!==userId){
+            const respon: ServiceResponse = {
+                status:"error",
+                message: "you dont have permissions",
+                code: 401,
+            }
+            return respon
+        }
         const deletePost = await PostRepository.deletePost(postId) //запит у бд для видалення
         if (deletePost == null) {
             const respon: ServiceResponse = {
