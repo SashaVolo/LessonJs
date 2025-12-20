@@ -275,14 +275,15 @@ export const postService: IServiceContract = {
             }
             return respon
         }
-        if(findPost.createdBy!==userId){
-            const respon: ServiceResponse = {
-                status:"error",
-                message: "you dont have permissions",
-                code: 401,
-            }
-            return respon
-        }
+        // if(findPost.createdBy!==userId){
+        //     const respon: ServiceResponse = {
+        //         status:"error",
+        //         message: "you dont have permissions",
+        //         code: 401,
+        //     }
+        //     return respon
+        // }
+        console.log(userId)
         const deletePost = await PostRepository.deletePost(postId) //запит у бд для видалення
         if (deletePost == null) {
             const respon: ServiceResponse = {

@@ -1,17 +1,18 @@
 import type { Request, Response } from "express";
 import { Prisma } from "../generated/prisma";
 
-export type Post = Prisma.PostGetPayload<{}> //типи prisma
-export type PostWithTag = Prisma.PostGetPayload<{
-    include:{
-        tags:{
-            include:{
-                tag: true
+export type Post = Prisma.PostGetPayload<{
+    include: {
+        user: true, // Получаем данные автора (firstName, avatar и т.д.)
+        tags: {
+            include: {
+                tag: true // Получаем саму сущность Tag через промежуточную таблицу PostTag
             }
-        }
         
+        }
     }
-}>
+}>//типи prisma
+
 export type CreatePost = Prisma.PostCreateInput
 export type CreatePostChecked = Prisma.PostUncheckedCreateInput
 
@@ -20,7 +21,7 @@ export type UpdatePostChecked = Prisma.PostUncheckedUpdateInput
 
 export interface ServiceResponse { //тип відповіді
     status: "success" | "error"
-    dataPost?: PostWithTag 
+    dataPost?: Post
     dataPosts?: Post[] 
     message?: string
     code: number
@@ -38,8 +39,8 @@ export interface IControllerContract {
         req: Request<Record<string, never>, Post[]|Post| string, object, {skip?: string; take?: string }>,
         res: Response<Post[]|Post | string>) => Promise<void>
     getPostsById: (
-        req: Request<{ id: string }, PostWithTag | string, object>,
-        res: Response<PostWithTag| string>) => Promise<void>
+        req: Request<{ id: string }, Post | string, object>,
+        res: Response<Post| string>) => Promise<void>
     createPost: (
         req: Request<Record<string, never>, string, CreatePostChecked[]>, 
         res: Response<string>) => Promise<void>;
@@ -48,14 +49,14 @@ export interface IControllerContract {
         res: Response<string,{ userId: number }>) => Promise<void>;
     deletePost: (
         req: Request<{ id: string }, Post | string, object>,
-        res: Response<Post| string>) => Promise<void>
+        res: Response<Post| string>) => Promise<Post | void>
 }
 export interface IRepositoryContract {
     getAllPosts: (skipTakeObj: {skip: number, take: number}|{skip: number}) => Promise<Post[] | null>
-    getPostsById: (id: number) => Promise<PostWithTag | null>
+    getPostsById: (id: number) => Promise<Post | null>
     CreatePost: (body: {data: CreatePostChecked}) => Promise<CreatePostChecked | null>
     UpdatePost: (id: number, data: UpdatePostChecked) => Promise<UpdatePostChecked | null>
-    deletePost: (id: number) => Promise<PostWithTag | null>
+    deletePost: (id: number) => Promise<Post | null>
 }
 
 // інформація:

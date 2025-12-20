@@ -5,9 +5,20 @@ import { IRepositoryContract } from "./post.types";
 export const PostRepository: IRepositoryContract = {
     getAllPosts: async (skipTakeObj) => {
         try {
-            const posts = await client.post.findMany(skipTakeObj)
-            return posts
-        }
+        const posts = await client.post.findMany({
+            ...skipTakeObj, // Разворачиваем skip и take
+            include: {
+                user: true, // Включаем автора
+                tags: {
+                    include: {
+                        tag: true // Включаем теги
+                    }
+                }
+            }
+        });
+        
+        return posts;
+    }
         catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 switch (error.code) {
@@ -41,6 +52,7 @@ export const PostRepository: IRepositoryContract = {
             const findPost = await client.post.findUnique({ // знаходження елементу в бд
                 where: { id },
                 include: {
+                    user: true,
                     tags: {
                         include: {
                             tag: true
@@ -161,6 +173,7 @@ export const PostRepository: IRepositoryContract = {
             const deletePost = await client.post.delete({ // видалення елементу в бд
                 where: { id },
                 include: {
+                    user: true,
                     tags: {
                         include: {
                             tag: true
