@@ -34,9 +34,68 @@
 * **Framework:** Express.js
 * **Language:** TypeScript
 * **ORM:** Prisma (Client & Migrations)
-* **Database:** PostgreSQL
+* **Database:** SQLite
 * **Auth:** `bcrypt` (хешування паролів), `jsonwebtoken` (генерація токенів)
 * **Env Management:** `dotenv`
+
+## 🗄️ Database Schema
+
+Проект використовує реляційну базу даних (SQLite) під керуванням Prisma ORM.
+
+### 👤 User (Користувач)
+* **Identity:** `id`, `email` (Unique), `password` (Hashed)
+* **Profile:** `firstName`, `secondName`, `avatar` (Emoji support)
+* **Role:** `isAdmin` (Boolean, default: false)
+* **Relations:**
+  * `createdPosts`: Список створених постів (One-to-Many)
+  * `likedPosts`: Список вподобаних постів (Many-to-Many)
+
+### 📝 Post (Публікація)
+* **Content:** `id`, `name` (Title), `description`, `pic` (Image URL)
+* **Stats:** `likeCount` (Cached counter for performance)
+* **Relations:**
+  * `createdBy`: Посилання на автора (`User`)
+  * `tags`: Теги, прив'язані до поста (Many-to-Many через `PostTag`)
+  * `likedBy`: Користувачі, які лайкнули пост (Many-to-Many через `PostLike`)
+
+### 🏷️ Tag (Тег)
+* **Core:** `id`, `name` (Unique string)
+* **Relations:**
+  * `posts`: Список постів з цим тегом
+
+### 🔗 Join Tables (Many-to-Many)
+Для оптимізації зв'язків використовуються проміжні таблиці:
+* **PostTag:** Зв'язує `Post` ↔ `Tag` (Cascade delete enabled).
+* **PostLike:** Зв'язує `User` ↔ `Post` (Унікальна пара `userId_postId`, щоб уникнути дублювання лайків).
+
+```mermaid
+erDiagram
+    User ||--o{ Post : "creates"
+    User ||--o{ PostLike : "likes"
+    Post ||--o{ PostLike : "has"
+    Post ||--o{ PostTag : "has"
+    Tag ||--o{ PostTag : "includes"
+
+    User {
+        Int id
+        String email
+        String firstName
+        String avatar
+        Boolean isAdmin
+    }
+
+    Post {
+        Int id
+        String name
+        String description
+        Int likeCount
+    }
+
+    Tag {
+        Int id
+        String name
+    }
+```
 
 ## 📂 Структура Проекту
 
@@ -67,3 +126,4 @@ server/
 ├── .env                  # Конфігурація секретів (не комітити!)
 ├── package.json          # Залежності
 └── tsconfig.json         # Налаштування TypeScript
+
