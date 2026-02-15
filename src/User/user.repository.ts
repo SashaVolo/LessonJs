@@ -3,6 +3,20 @@ import { Prisma } from "../generated/prisma";
 import { IRepositoryContract } from "./user.types";
 
 export const userRepository: IRepositoryContract = {
+    updateAvatar: async (userId: number, avatarSymbol: string) => {
+        return client.user.update({
+            where: { id: userId },
+            data: { avatar: avatarSymbol },
+            select: { 
+                id: true, 
+                firstName: true, 
+                secondName: true, 
+                avatar: true,
+                email: true,
+                isAdmin: true
+            }
+        });
+    },
     findByEmail: async (email) => {
         try {
             const findUser = await client.user.findUnique({

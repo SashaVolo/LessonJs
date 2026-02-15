@@ -9,10 +9,9 @@ export function authMiddleware(
     res: Response<object, { userId: number }>,
     next: NextFunction
 ) {
-    // Получаем значение заголовка Authorization
+
     const authorization = req.headers.authorization;
 
-    // Если заголовка нет
     if (!authorization) {
         res.status(401).json({
             message: "authorization is required",
@@ -20,10 +19,10 @@ export function authMiddleware(
         return;
     }
 
-    // Разделение на тип и сам токен
+
     const [typeToken, token] = authorization.split(" ");
 
-    // Проверяем формат и наличие токена
+
     if (typeToken !== "Bearer" || !token) {
         res.status(401).json({
             message: "invalid authorization. Use Bearer token",
@@ -32,10 +31,9 @@ export function authMiddleware(
     }
 
     try {
-        //декодируем
+
         const decodedToken = verify(token, ENV.SECRET_KEY) as AuthenticatedUser;
 
-        // Сохраняем id пользователя в res.locals 
         res.locals.userId = decodedToken.id;
 
         next();
@@ -47,4 +45,34 @@ export function authMiddleware(
             message: "invalid token",
         });
     }
+}
+
+export function authMiddlewareOptional(
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
+    const authorization = req.headers.authorization;
+
+    if (!authorization) {
+        return next();
+    }
+
+    const [typeToken, token] = authorization.split(" ");
+
+    if (typeToken !== "Bearer" || !token) {
+        return next();
+    }
+
+    try {
+        const decodedToken = verify(token, ENV.SECRET_KEY) as AuthenticatedUser;
+
+        res.locals.userId = decodedToken.id;
+
+    } catch (error) {
+
+        console.log("Optional auth token check failed:", error);
+    }
+
+    next();
 }

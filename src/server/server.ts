@@ -20,6 +20,8 @@ app.use(postRouter)
 app.use(tagRouter)
 app.use(userRouter)
 
+app.use("/users", userRouter);
+
 app.listen(PORT, HOST, () => { //слухач
     console.log(`http://${HOST}:${PORT}`)
 })

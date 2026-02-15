@@ -8,6 +8,42 @@ import { compare, hash } from "bcrypt";
 
 
 export const userService: IServiceContract = {
+    updateAvatar: async (userId: number, avatar: string): Promise<ServiceResponse> => {
+        // Валідація
+        if (avatar.length > 10) {
+            return { 
+                status: "error", 
+                message: "Avatar must be an emoji (max 10 chars)", 
+                code: 400 
+            };
+        }
+
+        try {
+            const updatedUser = await userRepository.updateAvatar(userId, avatar);
+            
+            if (!updatedUser) {
+                return {
+                    status: "error",
+                    message: "User not found",
+                    code: 404
+                };
+            }
+
+            return { 
+                status: "success", 
+                dataUser: updatedUser, 
+                message: "Avatar updated successfully", 
+                code: 200 
+            };
+        } catch (error) {
+            console.error(error);
+            return { 
+                status: "error", 
+                message: "Database error", 
+                code: 500 
+            };
+        }
+    },
     login: async (body) => {
         const user = await userRepository.findByEmail(body.email)
         if(!user){
@@ -27,14 +63,14 @@ export const userService: IServiceContract = {
             }
             return respon
         }
-        const tocken = sign({id: user.id},ENV.SECRET_KEY,{
+        const token = sign({id: user.id},ENV.SECRET_KEY,{
             expiresIn: "7d"
         })
         const respon: ServiceResponse = {
             status: "success",
             message: "success",
             code: 200,
-            dataAuth: {tocken: tocken}
+            dataAuth: {token: token}
         }
         return respon
     },
@@ -72,14 +108,14 @@ export const userService: IServiceContract = {
             return respon
         }
 
-        const tocken = sign({id: createUser.id},ENV.SECRET_KEY,{
+        const token = sign({id: createUser.id},ENV.SECRET_KEY,{
             expiresIn: "7d"
         })
         const respon: ServiceResponse = {
             status: "success",
             code: 200,
             message: "success",
-            dataAuth: {tocken: tocken}
+            dataAuth: {token: token}
         }
         return respon
 

@@ -13,7 +13,7 @@ userRouter.post("/login", userController.login);
 // Регистрация
 userRouter.post("/register", userController.register);
 
-
+userRouter.patch("/me/avatar", authMiddleware, userController.updateAvatar);
 
 export {userRouter}
 

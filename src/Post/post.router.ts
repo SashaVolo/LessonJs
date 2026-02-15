@@ -1,12 +1,12 @@
 
 import { Router } from "express";
 import {postController} from "./post.controller";
-import { authMiddleware } from "../middlewares/auth-middleware";
+import { authMiddleware, authMiddlewareOptional } from "../middlewares/auth-middleware";
 
 const postRouter = Router();
 
 // Отримати всі пости
-postRouter.get("/posts",postController.getAllPosts);
+postRouter.get("/posts", authMiddlewareOptional, postController.getAllPosts);
 
 // Отримати пост за ID
 postRouter.get("/posts/:id", postController.getPostsById);
@@ -19,6 +19,6 @@ postRouter.post("/posts", authMiddleware, postController.createPost);
 postRouter.patch("/posts/:id", authMiddleware ,postController.updatePost);
 
 postRouter.delete("/posts/:id", authMiddleware ,postController.deletePost);
-
+postRouter.post("/posts/:id/like", authMiddleware, postController.toggleLike);
 
 export {postRouter}
